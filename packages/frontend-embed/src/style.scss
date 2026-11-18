@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+@use '../../frontend-shared/dollars/typography.scss';
+
 :root {
 	--MI-radius: 12px;
 	--MI-marginFull: 14px;

@@ -1,0 +1,25 @@
+/*
+ * SPDX-FileCopyrightText: arition
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+@font-face {
+	font-family: "Inter";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('./fonts/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: "Inter";
+	font-style: italic;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('./fonts/InterVariable-Italic.woff2') format('woff2');
+}
+
+// Change only the inherited default; keep explicit system, icon, and code fonts.
+html:not(.useSystemFont) {
+	font-family: "Inter", 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
