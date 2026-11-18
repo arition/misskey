@@ -1,0 +1,91 @@
+name: Dollars source image
+
+on:
+  push:
+    branches:
+      - 'dollars/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dollars-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.repository == 'arition/misskey'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      IMAGE: localhost/dollars-misskey:sha-${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build source and retain the validation stage
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile
+          target: native-builder
+          platforms: linux/amd64
+          load: true
+          tags: dollars-build-check:${{ github.sha }}
+          cache-from: type=gha,scope=dollars-source
+          cache-to: type=gha,mode=max,scope=dollars-source
+
+      - name: Check source safety and feature tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "$PWD/.git:/misskey/.git:ro" \
+            -e GIT_CONFIG_COUNT=1 \
+            -e GIT_CONFIG_KEY_0=safe.directory \
+            -e GIT_CONFIG_VALUE_0=/misskey \
+            --entrypoint node "dollars-build-check:$GITHUB_SHA" \
+            scripts/check-shipping.mjs --base 2026.11.0
+          docker run --rm --entrypoint node "dollars-build-check:$GITHUB_SHA" \
+            --test scripts/dollars/typography.test.mjs
+
+      - name: Build runtime image from the same source
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64
+          tags: ${{ env.IMAGE }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.title=Dollars Misskey
+          outputs: type=docker,dest=/tmp/dollars-image.tar
+          provenance: false
+          cache-from: type=gha,scope=dollars-source
+          cache-to: type=gha,mode=max,scope=dollars-source
+
+      - name: Package the image and its source revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/dollars-image
+          gzip -1 /tmp/dollars-image.tar
+          mv /tmp/dollars-image.tar.gz /tmp/dollars-image/
+          printf '%s\n' "$GITHUB_SHA" > /tmp/dollars-image/source-revision.txt
+          printf '%s\n' "$IMAGE" > /tmp/dollars-image/image-reference.txt
+          cd /tmp/dollars-image
+          sha256sum dollars-image.tar.gz > SHA256SUMS
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dollars-image-${{ github.sha }}
+          path: /tmp/dollars-image/
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error
