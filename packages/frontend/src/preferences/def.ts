@@ -64,6 +64,11 @@ export const PREF_DEF = definePreferences({
 		}][],
 	},
 
+	timelineAutoTranslate: {
+		accountDependent: true,
+		default: false,
+	},
+
 	pinnedUserLists: {
 		accountDependent: true,
 		default: [] as Misskey.entities.UserList[],

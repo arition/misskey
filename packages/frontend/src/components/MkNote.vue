@@ -11,7 +11,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:class="[$style.root, { [$style.showActionsOnlyHover]: prefer.s.showNoteActionsOnlyHover, [$style.skipRender]: prefer.s.skipNoteRender }]"
 	tabindex="0"
 >
-	<MkNoteSub v-if="appearNote.replyId && !renoteCollapsed" :note="appearNote?.reply ?? null" :class="$style.replyTo"/>
+	<MkNoteSub
+		v-if="appearNote.replyId && !renoteCollapsed"
+		:key="appearNote.replyId"
+		:note="appearNote.reply ?? null"
+		:autoTranslate="timelineTranslationEnabled"
+		:class="$style.replyTo"
+	/>
 	<div v-if="pinned" :class="$style.tip"><i class="ti ti-pin"></i> {{ i18n.ts.pinnedNote }}</div>
 	<div v-if="isRenote" :class="$style.renote">
 		<div v-if="note.channel" :class="$style.colorBar" :style="{ background: note.channel.color }"></div>
@@ -85,6 +91,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<Mfm :text="translation.text" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis" class="_selectable"/>
 							</div>
 						</div>
+						<div v-if="autoTranslationFailed && !translating && !translation" :class="$style.translation" role="status">{{ i18n.ts._timelineTranslation.failed }}</div>
 					</div>
 					<div v-if="appearNote.files && appearNote.files.length > 0" style="margin-top: 8px;">
 						<MkMediaList ref="galleryEl" :mediaList="appearNote.files" :user="appearNote.user"/>
@@ -200,6 +207,9 @@ import { inject, ref, useTemplateRef, provide, computed } from 'vue';
 import type { Ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { useNote } from '@/composables/use-note.js';
+import { profileNoteTranslation, useTimelineTranslation } from '@/dollars/translation/use-timeline-translation.js';
+import { $i } from '@/i.js';
+import { instance } from '@/instance.js';
 import { prefer } from '@/preferences.js';
 import { i18n } from '@/i18n.js';
 import { userPage } from '@@/js/user.js';
@@ -239,6 +249,7 @@ provide(DI.mock, props.mock);
 
 // 周辺コンテキストのインジェクト
 const inTimeline = inject<boolean>('inTimeline', false);
+const inProfileNotes = inject(profileNoteTranslation, false);
 const tl_withSensitive = inject<Ref<boolean>>('tl_withSensitive', ref(true));
 const inChannel = inject(DI.inChannel, null);
 const currentClip = inject<Ref<Misskey.entities.Clip> | null>('currentClip', null);
@@ -259,6 +270,7 @@ const {
 	appearNote,
 	$appearNote,
 	hideByPlugin,
+	isDeleted,
 	isRenote,
 	showContent,
 	translating,
@@ -296,6 +308,20 @@ const {
 	inChannel,
 	currentClip,
 	currentAntenna,
+});
+
+const timelineTranslationEnabled = computed(() => (inTimeline || inProfileNotes) && !props.mock && prefer.r.timelineAutoTranslate.value &&
+	!!$i?.policies.canUseTranslator && instance.translatorAvailable &&
+	!isDeleted.value && !hardMuted && !hideByPlugin && muted.value === false &&
+	!renoteCollapsed.value && !appearNote.isHidden);
+
+const { failed: autoTranslationFailed } = useTimelineTranslation({
+	root: rootEl,
+	note: appearNote,
+	accountId: $i?.id ?? '',
+	translation,
+	translating,
+	eligible: computed(() => timelineTranslationEnabled.value && (appearNote.cw == null || showContent.value)),
 });
 
 // provide

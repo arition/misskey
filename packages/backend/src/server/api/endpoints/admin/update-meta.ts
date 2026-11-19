@@ -111,6 +111,10 @@ export const paramDef = {
 		},
 		deeplAuthKey: { type: 'string', nullable: true },
 		deeplIsPro: { type: 'boolean' },
+		translationProvider: { type: 'string', enum: ['deepl', 'llm'] },
+		llmTranslationBaseUrl: { type: 'string', minLength: 1, maxLength: 1024, pattern: '^https?://[^\\s]+$' },
+		llmTranslationApiKey: { type: 'string', nullable: true, maxLength: 1024 },
+		llmTranslationModel: { type: 'string', minLength: 1, maxLength: 128, pattern: '\\S' },
 		enableEmail: { type: 'boolean' },
 		email: { type: 'string', nullable: true },
 		smtpSecure: { type: 'boolean' },
@@ -600,6 +604,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.deeplIsPro !== undefined) {
 				set.deeplIsPro = ps.deeplIsPro;
+			}
+
+			if (ps.translationProvider !== undefined) {
+				set.translationProvider = ps.translationProvider;
+			}
+
+			if (ps.llmTranslationBaseUrl !== undefined) {
+				set.llmTranslationBaseUrl = ps.llmTranslationBaseUrl.replace(/\/+$/, '');
+			}
+
+			if (ps.llmTranslationApiKey !== undefined) {
+				set.llmTranslationApiKey = ps.llmTranslationApiKey?.trim() || null;
+			}
+
+			if (ps.llmTranslationModel !== undefined) {
+				set.llmTranslationModel = ps.llmTranslationModel.trim();
 			}
 
 			if (ps.enableIpLogging !== undefined) {

@@ -2095,6 +2095,8 @@ declare namespace entities {
         NotesTimelineResponse,
         NotesTranslateRequest,
         NotesTranslateResponse,
+        NotesTranslateCachedRequest,
+        NotesTranslateCachedResponse,
         NotesUnrenoteRequest,
         NotesUserListTimelineRequest,
         NotesUserListTimelineResponse,
@@ -3125,6 +3127,12 @@ type NotesTimelineRequest = operations['notes___timeline']['requestBody']['conte
 
 // @public (undocumented)
 type NotesTimelineResponse = operations['notes___timeline']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type NotesTranslateCachedRequest = operations['notes___translate-cached']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesTranslateCachedResponse = operations['notes___translate-cached']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type NotesTranslateRequest = operations['notes___translate']['requestBody']['content']['application/json'];

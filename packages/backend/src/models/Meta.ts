@@ -379,6 +379,18 @@ export class MiMeta {
 	})
 	public deeplIsPro: boolean;
 
+	@Column('varchar', { length: 16, default: 'deepl' })
+	public translationProvider: 'deepl' | 'llm';
+
+	@Column('varchar', { length: 1024, default: 'https://api.openai.com/v1' })
+	public llmTranslationBaseUrl: string;
+
+	@Column('varchar', { length: 1024, nullable: true })
+	public llmTranslationApiKey: string | null;
+
+	@Column('varchar', { length: 128, default: 'gpt-4o-mini' })
+	public llmTranslationModel: string;
+
 	@Column('varchar', {
 		length: 1024,
 		nullable: true,

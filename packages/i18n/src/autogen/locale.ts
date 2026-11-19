@@ -13469,4 +13469,56 @@ export interface Locale extends ILocale {
          */
         "mfm": string;
     };
+    "_timelineTranslation": {
+        /**
+         * タイムラインを自動翻訳
+         */
+        "title": string;
+        /**
+         * 表示中のノートを表示言語に自動翻訳します。本文とCW（非公開ノートを含む）はサーバーで設定された翻訳プロバイダーに送信され、利用料金が発生する場合があります。CWで隠された本文は開くまで翻訳しません。有効にしますか？
+         */
+        "confirm": string;
+        /**
+         * 自動翻訳できませんでした。ノートのメニューから手動で翻訳できます。
+         */
+        "failed": string;
+    };
+    "_translationSettings": {
+        /**
+         * 翻訳サービス
+         */
+        "title": string;
+        /**
+         * 翻訳プロバイダー
+         */
+        "provider": string;
+        /**
+         * LLM (OpenAI互換API)
+         */
+        "llm": string;
+        /**
+         * APIベースURL
+         */
+        "baseUrl": string;
+        /**
+         * 例: https://api.openai.com/v1（/chat/completionsは自動で追加されます）。ローカルサーバーを使う場合は、サーバー設定のallowedPrivateNetworksも確認してください。
+         */
+        "baseUrlDescription": string;
+        /**
+         * APIキー
+         */
+        "apiKey": string;
+        /**
+         * 認証不要のプロバイダーでは空欄にできます。
+         */
+        "apiKeyDescription": string;
+        /**
+         * モデル
+         */
+        "model": string;
+        /**
+         * 翻訳するノートの本文とCWは、選択したLLMプロバイダーに送信されます。非公開ノートも対象です。プロバイダーのプライバシーポリシーと利用料金を確認してください。
+         */
+        "llmDescription": string;
+    };
 }

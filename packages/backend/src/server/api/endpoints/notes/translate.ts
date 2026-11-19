@@ -12,13 +12,19 @@ import { GetterService } from '@/server/api/GetterService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
+import { isTranslatorAvailable } from '@/misc/translation.js';
+import { getLlmNoteTranslation } from '@/misc/note-translation-cache.js';
+import { MiNoteTranslation } from '@/models/NoteTranslation.js';
 import { ApiError } from '../../error.js';
+import type { DataSource } from 'typeorm';
 
 export const meta = {
 	tags: ['notes'],
 
 	requireCredential: true,
 	kind: 'read:account',
+
+	limit: { duration: 60000, max: 10 },
 
 	res: {
 		type: 'object',
@@ -67,6 +73,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private getterService: GetterService,
 		private httpRequestService: HttpRequestService,
 		private roleService: RoleService,
+		@Inject(DI.db) db: DataSource,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me.id);
@@ -98,8 +105,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return;
 			}
 
-			if (this.serverSettings.deeplAuthKey == null) {
+			if (!isTranslatorAvailable(this.serverSettings)) {
 				throw new ApiError(meta.errors.unavailable);
+			}
+
+			if (this.serverSettings.translationProvider === 'llm') {
+				try {
+					return await getLlmNoteTranslation(db.getRepository(MiNoteTranslation), this.httpRequestService, this.serverSettings, note, text, ps.targetLang);
+				} catch {
+					// Do not expose upstream responses, credentials, or private note text.
+					throw new ApiError(meta.errors.unavailable);
+				}
 			}
 
 			let targetLang = ps.targetLang;

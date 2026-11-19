@@ -45,6 +45,7 @@ import { deepMerge } from '@/utility/merge.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 import { prefer } from '@/preferences.js';
+import { getTimelineTranslationMenu } from '@/dollars/translation/menu.js';
 
 const tlComponent = useTemplateRef('tlComponent');
 
@@ -209,7 +210,7 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 		icon: 'ti ti-dots',
 		text: i18n.ts.options,
 		handler: (ev) => {
-			const menuItems: MenuItem[] = [];
+			const menuItems: MenuItem[] = getTimelineTranslationMenu();
 
 			menuItems.push({
 				type: 'switch',

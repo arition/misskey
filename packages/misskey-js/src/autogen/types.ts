@@ -3298,6 +3298,15 @@ export type paths = {
          */
         post: operations['notes___translate'];
     };
+    '/notes/translate-cached': {
+        /**
+         * notes/translate-cached
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:account*
+         */
+        post: operations['notes___translate-cached'];
+    };
     '/notes/unrenote': {
         /**
          * notes/unrenote
@@ -9531,6 +9540,11 @@ export interface operations {
                         notesPerOneAd: number;
                         backgroundImageUrl: string | null;
                         deeplAuthKey: string | null;
+                        /** @enum {string} */
+                        translationProvider: 'deepl' | 'llm';
+                        llmTranslationBaseUrl: string;
+                        llmTranslationApiKey: string | null;
+                        llmTranslationModel: string;
                         deeplIsPro: boolean;
                         defaultDarkTheme: string | null;
                         defaultLightTheme: string | null;
@@ -13019,6 +13033,11 @@ export interface operations {
                     langs?: string[];
                     deeplAuthKey?: string | null;
                     deeplIsPro?: boolean;
+                    /** @enum {string} */
+                    translationProvider?: 'deepl' | 'llm';
+                    llmTranslationBaseUrl?: string;
+                    llmTranslationApiKey?: string | null;
+                    llmTranslationModel?: string;
                     enableEmail?: boolean;
                     email?: string | null;
                     smtpSecure?: boolean;
@@ -31852,6 +31871,94 @@ export interface operations {
             };
             /** @description I'm Ai */
             418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'notes___translate-cached': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    noteIds: string[];
+                    targetLang: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        noteId: string;
+                        sourceLang: string;
+                        text: string;
+                    }[];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

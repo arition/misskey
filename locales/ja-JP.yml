@@ -3606,3 +3606,19 @@ _qr:
   scanFile: "端末の画像をスキャン"
   raw: "テキスト"
   mfm: "MFM"
+
+_timelineTranslation:
+  title: "タイムラインを自動翻訳"
+  confirm: "表示中のノートを表示言語に自動翻訳します。本文とCW（非公開ノートを含む）はサーバーで設定された翻訳プロバイダーに送信され、利用料金が発生する場合があります。CWで隠された本文は開くまで翻訳しません。有効にしますか？"
+  failed: "自動翻訳できませんでした。ノートのメニューから手動で翻訳できます。"
+
+_translationSettings:
+  title: "翻訳サービス"
+  provider: "翻訳プロバイダー"
+  llm: "LLM (OpenAI互換API)"
+  baseUrl: "APIベースURL"
+  baseUrlDescription: "例: https://api.openai.com/v1（/chat/completionsは自動で追加されます）。ローカルサーバーを使う場合は、サーバー設定のallowedPrivateNetworksも確認してください。"
+  apiKey: "APIキー"
+  apiKeyDescription: "認証不要のプロバイダーでは空欄にできます。"
+  model: "モデル"
+  llmDescription: "翻訳するノートの本文とCWは、選択したLLMプロバイダーに送信されます。非公開ノートも対象です。プロバイダーのプライバシーポリシーと利用料金を確認してください。"

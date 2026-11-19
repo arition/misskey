@@ -4,6 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
+import { isTranslatorAvailable } from '@/misc/translation.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { MetaService } from '@/core/MetaService.js';
 import type { Config } from '@/config.js';
@@ -431,6 +432,19 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			translationProvider: {
+				type: 'string', enum: ['deepl', 'llm'],
+				optional: false, nullable: false,
+			},
+			llmTranslationBaseUrl: {
+				type: 'string', optional: false, nullable: false,
+			},
+			llmTranslationApiKey: {
+				type: 'string', optional: false, nullable: true,
+			},
+			llmTranslationModel: {
+				type: 'string', optional: false, nullable: false,
+			},
 			deeplIsPro: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -690,7 +704,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				clientOptions: instance.clientOptions,
 				enableEmail: instance.enableEmail,
 				enableServiceWorker: instance.enableServiceWorker,
-				translatorAvailable: instance.deeplAuthKey != null,
+				translatorAvailable: isTranslatorAvailable(instance),
 				cacheRemoteFiles: instance.cacheRemoteFiles,
 				cacheRemoteSensitiveFiles: instance.cacheRemoteSensitiveFiles,
 				pinnedUsers: instance.pinnedUsers,
@@ -737,6 +751,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				objectStorageS3ForcePathStyle: instance.objectStorageS3ForcePathStyle,
 				deeplAuthKey: instance.deeplAuthKey,
 				deeplIsPro: instance.deeplIsPro,
+				translationProvider: instance.translationProvider,
+				llmTranslationBaseUrl: instance.llmTranslationBaseUrl,
+				llmTranslationApiKey: instance.llmTranslationApiKey,
+				llmTranslationModel: instance.llmTranslationModel,
 				enableIpLogging: instance.enableIpLogging,
 				enableActiveEmailValidation: instance.enableActiveEmailValidation,
 				enableVerifymailApi: instance.enableVerifymailApi,

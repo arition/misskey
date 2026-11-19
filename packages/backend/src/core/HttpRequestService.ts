@@ -315,6 +315,7 @@ export class HttpRequestService {
 			headers?: Record<string, string>,
 			timeout?: number,
 			size?: number,
+			redirect?: 'follow' | 'error',
 			isLocalAddressAllowed?: boolean,
 		} = {},
 		extra: HttpRequestSendOptions = {
@@ -338,6 +339,7 @@ export class HttpRequestService {
 				...(args.headers ?? {}),
 			},
 			body: args.body,
+			redirect: args.redirect ?? 'follow',
 			size: args.size ?? 10 * 1024 * 1024,
 			agent: (url) => this.getAgentByUrl(url, false, isLocalAddressAllowed),
 			signal: controller.signal,

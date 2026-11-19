@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	{{ i18n.ts.deletedNote }}
 </div>
 <div v-else-if="!muted" :class="[$style.root, { [$style.children]: depth > 1 }]">
-	<div :class="$style.main">
+	<div ref="translationRoot" :class="$style.main">
 		<div v-if="note.channel" :class="$style.colorBar" :style="{ background: note.channel.color }"></div>
 		<MkAvatar :class="$style.avatar" :user="note.user" link preview/>
 		<div :class="$style.body">
@@ -20,6 +20,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</p>
 				<div v-show="note.cw == null || showContent">
 					<MkSubNoteContent :class="$style.text" :note="note"/>
+					<div v-if="!note.isHidden && !note.deletedAt && (translating || translation)" :class="$style.translation">
+						<MkLoading v-if="translating" mini/>
+						<div v-else-if="translation">
+							<b>{{ i18n.tsx.translatedFrom({ x: translation.sourceLang }) }}: </b>
+							<Mfm :text="translation.text" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis" class="_selectable"/>
+						</div>
+					</div>
+					<div v-if="translationEligible && translationFailed && !translating && !translation" :class="$style.translation" role="status">{{ i18n.ts._timelineTranslation.failed }}</div>
 				</div>
 			</div>
 		</div>
@@ -43,7 +51,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref, toRef, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
@@ -54,10 +62,12 @@ import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
 import { userPage } from '@@/js/user.js';
 import { checkWordMute } from '@/utility/check-word-mute.js';
+import { useTimelineTranslation } from '@/dollars/translation/use-timeline-translation.js';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note | null;
 	detail?: boolean;
+	autoTranslate?: boolean;
 
 	// how many notes are in between this one and the note being viewed in detail
 	depth?: number;
@@ -69,6 +79,21 @@ const muted = ref(props.note && $i ? checkWordMute(props.note, $i, $i.mutedWords
 
 const showContent = ref(false);
 const replies = ref<Misskey.entities.Note[]>([]);
+const translationRoot = ref<HTMLElement | null>(null);
+const translation = ref<Misskey.entities.NotesTranslateResponse | null>(null);
+const translating = ref(false);
+watch(() => [props.note?.id, props.note?.text, props.note?.cw], () => { translation.value = null; }, { flush: 'sync' });
+
+const translationEligible = computed(() => !!props.autoTranslate && !!props.note && !muted.value &&
+	!props.note.isHidden && !props.note.deletedAt && (props.note.cw == null || showContent.value));
+const { failed: translationFailed } = useTimelineTranslation({
+	root: translationRoot,
+	note: toRef(props, 'note'),
+	accountId: $i?.id ?? '',
+	translation,
+	translating,
+	eligible: translationEligible,
+});
 
 if (props.detail && props.note) {
 	misskeyApi('notes/children', {
@@ -135,6 +160,14 @@ if (props.detail && props.note) {
 .text {
 	margin: 0;
 	padding: 0;
+}
+
+.translation {
+	border: solid 0.5px var(--MI_THEME-divider);
+	border-radius: var(--MI-radius);
+	margin-top: 8px;
+	padding: 8px 12px;
+	overflow-wrap: break-word;
 }
 
 .reply, .more {

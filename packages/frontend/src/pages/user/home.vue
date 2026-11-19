@@ -159,7 +159,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, computed, onMounted, onUnmounted, onActivated, onDeactivated, nextTick, watch, ref, useTemplateRef } from 'vue';
+import { defineAsyncComponent, computed, onMounted, onUnmounted, onActivated, onDeactivated, nextTick, watch, ref, useTemplateRef, provide } from 'vue';
 import * as Misskey from 'misskey-js';
 import { getScrollContainer } from '@@/js/scroll.js';
 import MkNote from '@/components/MkNote.vue';
@@ -187,6 +187,7 @@ import MkSparkle from '@/components/MkSparkle.vue';
 import { prefer } from '@/preferences.js';
 import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
 import { isBirthday } from '@/utility/is-birthday.js';
+import { profileNoteTranslation } from '@/dollars/translation/use-timeline-translation.js';
 import type XTimeline_TypeReferenceOnly from './index.timeline.vue';
 
 function calcAge(birthdate: string): number {
@@ -222,6 +223,8 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
 	(ev: 'showMoreFiles'): void;
 }>();
+
+provide(profileNoteTranslation, true);
 
 const router = useRouter();
 

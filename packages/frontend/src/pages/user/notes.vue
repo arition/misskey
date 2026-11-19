@@ -28,16 +28,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, markRaw } from 'vue';
+import { ref, computed, markRaw, provide } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkNotesTimeline from '@/components/MkNotesTimeline.vue';
 import MkTab from '@/components/MkTab.vue';
 import { i18n } from '@/i18n.js';
 import { Paginator } from '@/utility/paginator.js';
+import { profileNoteTranslation } from '@/dollars/translation/use-timeline-translation.js';
 
 const props = defineProps<{
 	user: Misskey.entities.UserDetailed;
 }>();
+
+provide(profileNoteTranslation, true);
 
 const tab = ref<'featured' | 'notes' | 'all' | 'files'>('all');
 

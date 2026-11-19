@@ -27,23 +27,50 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<SearchMarker v-slot="slotProps">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
-						<template #label><SearchLabel>DeepL Translation</SearchLabel></template>
+						<template #label><SearchLabel>{{ i18n.ts._translationSettings.title }}</SearchLabel></template>
 
 						<div class="_gaps_m">
 							<SearchMarker>
-								<MkInput v-model="deeplAuthKey">
+								<MkSelect v-model="translationProvider" :items="translationProviderDef">
+									<template #label><SearchLabel>{{ i18n.ts._translationSettings.provider }}</SearchLabel></template>
+								</MkSelect>
+							</SearchMarker>
+
+							<div v-if="translationProvider === 'llm'" class="_gaps_m">
+								<MkInfo>{{ i18n.ts._translationSettings.llmDescription }}</MkInfo>
+								<SearchMarker>
+									<MkInput v-model="llmTranslationBaseUrl" type="url" placeholder="https://api.openai.com/v1">
+										<template #label><SearchLabel>{{ i18n.ts._translationSettings.baseUrl }}</SearchLabel></template>
+										<template #caption>{{ i18n.ts._translationSettings.baseUrlDescription }}</template>
+									</MkInput>
+								</SearchMarker>
+								<SearchMarker>
+									<MkInput v-model="llmTranslationApiKey" type="password">
+										<template #label><SearchLabel>{{ i18n.ts._translationSettings.apiKey }}</SearchLabel></template>
+										<template #caption>{{ i18n.ts._translationSettings.apiKeyDescription }}</template>
+									</MkInput>
+								</SearchMarker>
+								<SearchMarker>
+									<MkInput v-model="llmTranslationModel" placeholder="gpt-4o-mini">
+										<template #label><SearchLabel>{{ i18n.ts._translationSettings.model }}</SearchLabel></template>
+									</MkInput>
+								</SearchMarker>
+							</div>
+
+							<SearchMarker v-if="translationProvider === 'deepl'">
+								<MkInput v-model="deeplAuthKey" type="password">
 									<template #prefix><i class="ti ti-key"></i></template>
 									<template #label><SearchLabel>Auth Key</SearchLabel></template>
 								</MkInput>
 							</SearchMarker>
 
-							<SearchMarker>
+							<SearchMarker v-if="translationProvider === 'deepl'">
 								<MkSwitch v-model="deeplIsPro">
 									<template #label><SearchLabel>Pro account</SearchLabel></template>
 								</MkSwitch>
 							</SearchMarker>
 
-							<MkButton primary @click="save_deepl">Save</MkButton>
+							<MkButton primary :disabled="translationProvider === 'llm' && (!llmTranslationBaseUrl.trim() || !llmTranslationModel.trim())" @click="saveTranslation">{{ i18n.ts.save }}</MkButton>
 						</div>
 					</MkFolder>
 				</SearchMarker>
@@ -58,6 +85,9 @@ import { ref, computed } from 'vue';
 import MkInput from '@/components/MkInput.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
+import MkSelect from '@/components/MkSelect.vue';
+import MkInfo from '@/components/MkInfo.vue';
+import { useMkSelect } from '@/composables/use-mkselect.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { fetchInstance } from '@/instance.js';
@@ -67,12 +97,28 @@ import MkFolder from '@/components/MkFolder.vue';
 
 const meta = await misskeyApi('admin/meta');
 
+const { model: translationProvider, def: translationProviderDef } = useMkSelect({
+	items: [
+		{ label: 'DeepL', value: 'deepl' },
+		{ label: i18n.ts._translationSettings.llm, value: 'llm' },
+	],
+	initialValue: meta.translationProvider,
+});
+const llmTranslationBaseUrl = ref(meta.llmTranslationBaseUrl);
+const llmTranslationApiKey = ref(meta.llmTranslationApiKey ?? '');
+const llmTranslationModel = ref(meta.llmTranslationModel);
 const deeplAuthKey = ref(meta.deeplAuthKey ?? '');
 const deeplIsPro = ref(meta.deeplIsPro);
 const googleAnalyticsMeasurementId = ref(meta.googleAnalyticsMeasurementId ?? '');
 
-function save_deepl() {
+function saveTranslation() {
 	os.apiWithDialog('admin/update-meta', {
+		translationProvider: translationProvider.value,
+		...(translationProvider.value === 'llm' ? {
+			llmTranslationBaseUrl: llmTranslationBaseUrl.value.trim(),
+			llmTranslationApiKey: llmTranslationApiKey.value,
+			llmTranslationModel: llmTranslationModel.value.trim(),
+		} : {}),
 		deeplAuthKey: deeplAuthKey.value,
 		deeplIsPro: deeplIsPro.value,
 	}).then(() => {

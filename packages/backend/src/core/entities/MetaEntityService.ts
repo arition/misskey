@@ -5,6 +5,7 @@
 
 import { Brackets } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
+import { isTranslatorAvailable } from '@/misc/translation.js';
 import JSON5 from 'json5';
 import type { Packed } from '@/misc/json-schema.js';
 import type { MiMeta } from '@/models/Meta.js';
@@ -123,7 +124,7 @@ export class MetaEntityService {
 			enableEmail: instance.enableEmail,
 			enableServiceWorker: instance.enableServiceWorker,
 
-			translatorAvailable: instance.deeplAuthKey != null,
+			translatorAvailable: isTranslatorAvailable(instance),
 
 			serverRules: instance.serverRules,
 
